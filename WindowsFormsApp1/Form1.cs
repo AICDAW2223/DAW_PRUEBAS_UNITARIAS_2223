@@ -12,10 +12,11 @@ namespace GestionBancariaAppNS
 {
     public partial class GestionBancariaApp : Form
     {
-        private double saldo;  
-        const int ERR_CANTIDAD_NO_VALIDA = 1;
-        const int ERR_SALDO_INSUFICIENTE = 2;
-
+        private double saldo;
+        public const string ERR_CANTIDAD_NO_VALIDA = "Cantidad no válida";
+        public const string ERR_SALDO_INSUFICIENTE = "Saldo insuficiente";
+        //AICDAW2223
+        
         public GestionBancariaApp(double saldo = 0)
         {
             InitializeComponent();
@@ -25,49 +26,71 @@ namespace GestionBancariaAppNS
                 this.saldo = 0;
             txtSaldo.Text = ObtenerSaldo().ToString();
             txtCantidad.Text = "0";
+            //AICDAW2223
         }
 
         public double ObtenerSaldo() { return saldo; }
 
-        public int RealizarReintegro(double cantidad) 
+        public int RealizarReintegro(double cantidad)
         {
             if (cantidad <= 0)
-                return ERR_CANTIDAD_NO_VALIDA;
+                throw new ArgumentOutOfRangeException(ERR_CANTIDAD_NO_VALIDA);
+            
             if (saldo < cantidad)
-                return ERR_SALDO_INSUFICIENTE;
-            saldo += cantidad;
-            return 0;
+                throw new ArgumentOutOfRangeException(ERR_SALDO_INSUFICIENTE);
+            saldo -= cantidad; //Código correcto
+            return 0;//AICDAW2223
         }
 
-        public int RealizarIngreso(double cantidad) {
-            if (cantidad > 0)
-                return ERR_CANTIDAD_NO_VALIDA;
-            saldo -= cantidad;
-            return 0;
+        public int RealizarIngreso(double cantidad)
+        {
+            if (cantidad < 0)
+                throw new ArgumentOutOfRangeException(ERR_CANTIDAD_NO_VALIDA);
+            saldo += cantidad;
+            return 0;//AICDAW2223
         }
 
         private void btOperar_Click(object sender, EventArgs e)
         {
-            double cantidad = Convert.ToDouble(txtCantidad.Text); // Cogemos la cantidad del TextBox y la pasamos a número
+
+            double cantidad = Convert.ToDouble(txtCantidad.Text);
             if (rbReintegro.Checked)
             {
-                int respuesta = RealizarReintegro(cantidad);
-                if (respuesta == ERR_SALDO_INSUFICIENTE)
-                    MessageBox.Show("No se ha podido realizar la operación (¿Saldo insuficiente?)");
-                else
-                if (respuesta == ERR_CANTIDAD_NO_VALIDA)
-                    MessageBox.Show("Cantidad no válida, sólo se admiten cantidades positivas.");
-                else
+                try
+                {
+                    RealizarReintegro(cantidad);
                     MessageBox.Show("Transacción realizada.");
 
+
+                }
+                catch (Exception error)
+                {
+                    if (error.Message.Contains(ERR_SALDO_INSUFICIENTE))
+                        MessageBox.Show("No se ha podido realizar la operación (¿Saldo insuficiente ?)");
+                    else
+                    if (error.Message.Contains(ERR_CANTIDAD_NO_VALIDA))
+                        MessageBox.Show("Cantidad no válida, sólo se admiten cantidades positivas.");
+                }
             }
-            else {
-                if (RealizarIngreso(cantidad) == ERR_CANTIDAD_NO_VALIDA)
-                    MessageBox.Show("Cantidad no válida, sólo se admiten cantidades positivas.");
-                else
+            //AICDAW2223
+            else
+            {
+                try
+                {
+                    RealizarIngreso(cantidad);
                     MessageBox.Show("Transacción realizada.");
+                }
+                catch (Exception error)
+                {
+                    if (error.Message.Contains(ERR_CANTIDAD_NO_VALIDA))
+                        MessageBox.Show("Cantidad no válida, sólo se admiten cantidades positivas.");
+                }
+                txtSaldo.Text = ObtenerSaldo().ToString();
             }
-           txtSaldo.Text = ObtenerSaldo().ToString();
         }
-    }
-}
+        private void GestionBancariaApp_Load(object sender, EventArgs e)
+                {
+
+                }
+            }
+        }

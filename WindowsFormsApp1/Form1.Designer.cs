@@ -126,6 +126,7 @@
             this.Controls.Add(this.txtSaldo);
             this.Name = "GestionBancariaApp";
             this.Text = "La Banca Siempre Gana";
+            this.Load += new System.EventHandler(this.GestionBancariaApp_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
 
